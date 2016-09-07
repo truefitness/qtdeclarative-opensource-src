@@ -487,11 +487,6 @@ public:
             return Call(jump.m_label, Linkable);
         }
 
-        unsigned int getFlags(void)
-        {
-            return m_flags;
-        }
-
         AssemblerLabel m_label;
     private:
         Flags m_flags;
@@ -799,12 +794,6 @@ public:
     {
         AssemblerType::cacheFlush(code, size);
     }
-
-    void appendData(char *data, int len)
-    {
-        return m_assembler.appendData(data, len);
-    }
-
 protected:
     AbstractMacroAssembler()
         : m_randomSource(cryptographicallyRandomNumber())

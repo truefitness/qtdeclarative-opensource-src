@@ -111,7 +111,7 @@ void tst_qqmlapplicationengine::application()
     test_stderr_target.replace('\n', QByteArray("\r\n"));
 #endif
     QCOMPARE(test_stdout, QByteArray(""));
-    QVERIFY(QString(test_stderr).endsWith(QString(test_stderr_target)));
+    QCOMPARE(QString(test_stderr), QString(test_stderr_target));
     delete testProcess;
     QDir::setCurrent(srcDir);
 #else // !QT_NO_PROCESS

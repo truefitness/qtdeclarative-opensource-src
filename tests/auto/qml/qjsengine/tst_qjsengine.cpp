@@ -34,7 +34,6 @@
 #include <qgraphicsitem.h>
 #include <qstandarditemmodel.h>
 #include <QtCore/qnumeric.h>
-#include <QtCore/QSysInfo>
 #include <qqmlengine.h>
 #include <qqmlcomponent.h>
 #include <stdlib.h>
@@ -3804,10 +3803,6 @@ void tst_QJSEngine::intConversion_QTBUG43309()
 // QTBUG-44039 and QTBUG-43885:
 void tst_QJSEngine::toFixed()
 {
-    // Fails on i386 at the moment LP: #1634063
-    if (QSysInfo::buildCpuArchitecture() == "i386") {
-        QSKIP("Skipping test on i386 LP: #1634063");
-    }
     QJSEngine engine;
     QJSValue result = engine.evaluate(QStringLiteral("(12.5).toFixed()"));
     QVERIFY(result.isString());

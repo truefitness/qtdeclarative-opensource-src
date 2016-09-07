@@ -44,7 +44,7 @@ private:
 
 void TestQmllint::initTestCase()
 {
-    m_qmllintPath = QLatin1String(TESTBINDIR "/qmllint");
+    m_qmllintPath = QLibraryInfo::location(QLibraryInfo::BinariesPath) + QLatin1String("/qmllint");
 #ifdef Q_OS_WIN
     m_qmllintPath += QLatin1String(".exe");
 #endif

@@ -80,16 +80,6 @@ namespace JIT {
 
 class InstructionSelection;
 
-struct CachedLinkData {
-    quint32 index; // Link table index
-    quint32 offset; // Offset inside the codeRef code
-};
-
-struct LinkableCode {
-    int len;
-    void* code;
-};
-
 struct CompilationUnit : public QV4::CompiledData::CompilationUnit
 {
     virtual ~CompilationUnit();
@@ -102,8 +92,6 @@ struct CompilationUnit : public QV4::CompiledData::CompilationUnit
 
     QVector<JSC::MacroAssemblerCodeRef> codeRefs;
     QList<QVector<QV4::Primitive> > constantValues;
-    QList<QVector<CachedLinkData>> linkData;
-    QList<LinkableCode> linkableCode;
 };
 
 struct RelativeCall {
@@ -1107,12 +1095,7 @@ public:
             move(TrustedImm64(i), ReturnValueRegister);
             move64ToDouble(ReturnValueRegister, target);
 #else
-            QV4::Primitive vv = convertToValue(c);
-            FPRegisterID scratchFp;
-            scratchFp = target;
-            move(TrustedImm32(vv.int_32()), ReturnValueRegister);
-            move(TrustedImm32(vv.tag()), ScratchRegister);
-            moveIntsToDouble(ReturnValueRegister, ScratchRegister, target, scratchFp);
+            JSC::MacroAssembler::loadDouble(constantTable().loadValueAddress(c, ScratchRegister), target);
 #endif
             return target;
         }
@@ -1200,12 +1183,6 @@ public:
     Label exceptionReturnLabel;
     IR::BasicBlock * catchBlock;
     QVector<Jump> exceptionPropagationJumps;
-
-    LinkableCode tmpBuffer;
-
-    LinkableCode& codeToLink() { return tmpBuffer; }
-    QList<CallToLink>& callsToLink() { return _callsToLink; }
-
 private:
     QScopedPointer<const StackLayout> _stackLayout;
     ConstantTable _constTable;

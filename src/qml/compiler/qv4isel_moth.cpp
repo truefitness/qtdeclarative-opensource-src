@@ -296,11 +296,6 @@ QQmlRefPointer<QV4::CompiledData::CompilationUnit> InstructionSelection::backend
     return result;
 }
 
-QV4::CompiledData::CompilationUnit* InstructionSelection::mutableCompilationUnit()
-{
-    return compilationUnit.data();
-}
-
 void InstructionSelection::callValue(IR::Expr *value, IR::ExprList *args, IR::Expr *result)
 {
     Instruction::CallValue call;

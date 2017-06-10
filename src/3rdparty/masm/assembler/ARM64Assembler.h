@@ -570,12 +570,6 @@ public:
         ConditionInvalid
     } Condition;
 
-    // Code inherited from the QMLC project
-    void appendData(char *data, int len)
-    {
-        return m_buffer.appendData(data, len);
-    }
-
     static Condition invert(Condition cond)
     {
         return static_cast<Condition>(cond ^ 1);

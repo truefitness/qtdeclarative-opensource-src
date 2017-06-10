@@ -36,7 +36,6 @@
 #include <QDesktopServices>
 #include <QDir>
 #include <QCryptographicHash>
-#include <QtCore/QSysInfo>
 #include <QtQuick/QQuickItem>
 #include <QSignalSpy>
 #include <QVector2D>
@@ -260,11 +259,6 @@ void tst_qqmlqt::colorEqual()
 
 void tst_qqmlqt::rect()
 {
-    // Fails on i386 at the moment LP: #1634063
-    if (QSysInfo::buildCpuArchitecture() == "i386") {
-        QSKIP("Skipping test on i386 LP: #1634063");
-    }
-
     QQmlComponent component(&engine, testFileUrl("rect.qml"));
 
     QString warning1 = component.url().toString() + ":6: Error: Qt.rect(): Invalid arguments";
@@ -286,11 +280,6 @@ void tst_qqmlqt::rect()
 
 void tst_qqmlqt::point()
 {
-    // Fails on i386 at the moment LP: #1634063
-    if (QSysInfo::buildCpuArchitecture() == "i386") {
-        QSKIP("Skipping test on i386 LP: #1634063");
-    }
-
     QQmlComponent component(&engine, testFileUrl("point.qml"));
 
     QString warning1 = component.url().toString() + ":6: Error: Qt.point(): Invalid arguments";
@@ -311,11 +300,6 @@ void tst_qqmlqt::point()
 
 void tst_qqmlqt::size()
 {
-    // Fails on i386 at the moment LP: #1634063
-    if (QSysInfo::buildCpuArchitecture() == "i386") {
-        QSKIP("Skipping test on i386 LP: #1634063");
-    }
-
     QQmlComponent component(&engine, testFileUrl("size.qml"));
 
     QString warning1 = component.url().toString() + ":7: Error: Qt.size(): Invalid arguments";
@@ -337,11 +321,6 @@ void tst_qqmlqt::size()
 
 void tst_qqmlqt::vector2d()
 {
-    // Fails on i386 at the moment LP: #1634063
-    if (QSysInfo::buildCpuArchitecture() == "i386") {
-        QSKIP("Skipping test on i386 LP: #1634063");
-    }
-
     QQmlComponent component(&engine, testFileUrl("vector2.qml"));
 
     QString warning1 = component.url().toString() + ":6: Error: Qt.vector2d(): Invalid arguments";
@@ -362,11 +341,6 @@ void tst_qqmlqt::vector2d()
 
 void tst_qqmlqt::vector3d()
 {
-    // Fails on i386 at the moment LP: #1634063
-    if (QSysInfo::buildCpuArchitecture() == "i386") {
-        QSKIP("Skipping test on i386 LP: #1634063");
-    }
-
     QQmlComponent component(&engine, testFileUrl("vector.qml"));
 
     QString warning1 = component.url().toString() + ":6: Error: Qt.vector3d(): Invalid arguments";
@@ -387,11 +361,6 @@ void tst_qqmlqt::vector3d()
 
 void tst_qqmlqt::vector4d()
 {
-    // Fails on i386 at the moment LP: #1634063
-    if (QSysInfo::buildCpuArchitecture() == "i386") {
-        QSKIP("Skipping test on i386 LP: #1634063");
-    }
-
     QQmlComponent component(&engine, testFileUrl("vector4.qml"));
 
     QString warning1 = component.url().toString() + ":6: Error: Qt.vector4d(): Invalid arguments";
@@ -412,11 +381,6 @@ void tst_qqmlqt::vector4d()
 
 void tst_qqmlqt::quaternion()
 {
-    // Fails on i386 at the moment LP: #1634063
-    if (QSysInfo::buildCpuArchitecture() == "i386") {
-        QSKIP("Skipping test on i386 LP: #1634063");
-    }
-
     QQmlComponent component(&engine, testFileUrl("quaternion.qml"));
 
     QString warning1 = component.url().toString() + ":6: Error: Qt.quaternion(): Invalid arguments";

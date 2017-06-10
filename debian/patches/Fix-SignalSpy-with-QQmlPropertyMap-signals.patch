@@ -1,0 +1,349 @@
+From b19ebe1d23e1f2fd334cef4ec2731ab5cc69dbd7 Mon Sep 17 00:00:00 2001
+From: Albert Astals Cid <albert.astals@canonical.com>
+Date: Tue, 22 Nov 2016 12:26:54 +0100
+Subject: [PATCH] Fix SignalSpy with QQmlPropertyMap signals
+
+2e7d4ecdc59942b484159ca827f5d5dbc8787a1b caused the regression.
+To fix the regression I try accessing the signal name first
+and if it is not a function try accessing the handler name.
+
+Comes with a unit test to test both cases.
+
+Change-Id: I3897f344df9c6219636c70259eed503d9b76f09e
+Reviewed-by: Qt CI Bot <qt_ci_bot@qt-project.org>
+Reviewed-by: Simon Hausmann <simon.hausmann@qt.io>
+---
+ src/imports/testlib/SignalSpy.qml                 | 10 ++-
+ tests/auto/auto.pro                               |  1 +
+ tests/auto/quicktest/quicktest.pro                |  3 +
+ tests/auto/quicktest/signalspy/data/signalspy.qml | 60 ++++++++++++++
+ tests/auto/quicktest/signalspy/mypropertymap.cpp  | 38 +++++++++
+ tests/auto/quicktest/signalspy/mypropertymap.h    | 41 ++++++++++
+ tests/auto/quicktest/signalspy/signalspy.pro      |  9 +++
+ tests/auto/quicktest/signalspy/tst_signalspy.cpp  | 95 +++++++++++++++++++++++
+ 8 files changed, 255 insertions(+), 2 deletions(-)
+ create mode 100644 tests/auto/quicktest/quicktest.pro
+ create mode 100644 tests/auto/quicktest/signalspy/data/signalspy.qml
+ create mode 100644 tests/auto/quicktest/signalspy/mypropertymap.cpp
+ create mode 100644 tests/auto/quicktest/signalspy/mypropertymap.h
+ create mode 100644 tests/auto/quicktest/signalspy/signalspy.pro
+ create mode 100644 tests/auto/quicktest/signalspy/tst_signalspy.cpp
+
+diff --git a/src/imports/testlib/SignalSpy.qml b/src/imports/testlib/SignalSpy.qml
+index 200fc72..8a8e844 100644
+--- a/src/imports/testlib/SignalSpy.qml
++++ b/src/imports/testlib/SignalSpy.qml
+@@ -230,8 +230,14 @@ Item {
+             qtest_prevSignalName = ""
+         }
+         if (target != null && signalName != "") {
+-            var handlerName = qtest_signalHandlerName(signalName)
+-            var func = target[handlerName]
++            // Look for the signal name in the object
++            var func = target[signalName]
++            if (typeof func !== "function") {
++                // If it is not a function, try looking for signal handler
++                // i.e. (onSignal) this is needed for cases where there is a property
++                // and a signal with the same name, e.g. Mousearea.pressed
++                func = target[qtest_signalHandlerName(signalName)]
++            }
+             if (func === undefined) {
+                 spy.qtest_valid = false
+                 console.log("Signal '" + signalName + "' not found")
+diff --git a/tests/auto/auto.pro b/tests/auto/auto.pro
+index 556f5dd..f25742f 100644
+--- a/tests/auto/auto.pro
++++ b/tests/auto/auto.pro
+@@ -2,6 +2,7 @@ TEMPLATE=subdirs
+ SUBDIRS=\
+     qml \
+     quick \
++    quicktest \
+     particles \
+     qmltest \
+     qmldevtools \
+diff --git a/tests/auto/quicktest/quicktest.pro b/tests/auto/quicktest/quicktest.pro
+new file mode 100644
+index 0000000..3b4ec23
+--- /dev/null
++++ b/tests/auto/quicktest/quicktest.pro
+@@ -0,0 +1,3 @@
++TEMPLATE = subdirs
++SUBDIRS = \
++    signalspy
+diff --git a/tests/auto/quicktest/signalspy/data/signalspy.qml b/tests/auto/quicktest/signalspy/data/signalspy.qml
+new file mode 100644
+index 0000000..6c365e2
+--- /dev/null
++++ b/tests/auto/quicktest/signalspy/data/signalspy.qml
+@@ -0,0 +1,60 @@
++/****************************************************************************
++**
++** Copyright (C) 2016 The Qt Company Ltd.
++** Contact: https://www.qt.io/licensing/
++**
++** This file is part of the test suite of the Qt Toolkit.
++**
++** $QT_BEGIN_LICENSE:GPL-EXCEPT$
++** Commercial License Usage
++** Licensees holding valid commercial Qt licenses may use this file in
++** accordance with the commercial license agreement provided with the
++** Software or, alternatively, in accordance with the terms contained in
++** a written agreement between you and The Qt Company. For licensing terms
++** and conditions see https://www.qt.io/terms-conditions. For further
++** information use the contact form at https://www.qt.io/contact-us.
++**
++** GNU General Public License Usage
++** Alternatively, this file may be used under the terms of the GNU
++** General Public License version 3 as published by the Free Software
++** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
++** included in the packaging of this file. Please review the following
++** information to ensure the GNU General Public License requirements will
++** be met: https://www.gnu.org/licenses/gpl-3.0.html.
++**
++** $QT_END_LICENSE$
++**
++****************************************************************************/
++
++import QtQuick 2.0
++import QtTest 1.1
++import MyImport 1.0
++
++Rectangle {
++    id:rect
++    width: 200
++    height: 200
++    color:"red"
++
++    MouseArea {
++        id: mouseArea
++        anchors.fill: parent
++    }
++
++    MyPropertyMap {
++        id: propertyMap
++        objectName: "propertyMap"
++    }
++
++    SignalSpy {
++        objectName: "mouseSpy"
++        target: mouseArea
++        signalName: "pressed"
++    }
++
++    SignalSpy {
++        objectName: "propertyMapSpy"
++        target: propertyMap
++        signalName: "mySignal"
++    }
++}
+diff --git a/tests/auto/quicktest/signalspy/mypropertymap.cpp b/tests/auto/quicktest/signalspy/mypropertymap.cpp
+new file mode 100644
+index 0000000..91bd93d
+--- /dev/null
++++ b/tests/auto/quicktest/signalspy/mypropertymap.cpp
+@@ -0,0 +1,38 @@
++/****************************************************************************
++**
++** Copyright (C) 2016 The Qt Company Ltd.
++** Contact: https://www.qt.io/licensing/
++**
++** This file is part of the test suite of the Qt Toolkit.
++**
++** $QT_BEGIN_LICENSE:GPL-EXCEPT$
++** Commercial License Usage
++** Licensees holding valid commercial Qt licenses may use this file in
++** accordance with the commercial license agreement provided with the
++** Software or, alternatively, in accordance with the terms contained in
++** a written agreement between you and The Qt Company. For licensing terms
++** and conditions see https://www.qt.io/terms-conditions. For further
++** information use the contact form at https://www.qt.io/contact-us.
++**
++** GNU General Public License Usage
++** Alternatively, this file may be used under the terms of the GNU
++** General Public License version 3 as published by the Free Software
++** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
++** included in the packaging of this file. Please review the following
++** information to ensure the GNU General Public License requirements will
++** be met: https://www.gnu.org/licenses/gpl-3.0.html.
++**
++** $QT_END_LICENSE$
++**
++****************************************************************************/
++
++#include "mypropertymap.h"
++
++MyPropertyMap::MyPropertyMap(QObject *parent): QQmlPropertyMap(this, parent)
++{
++}
++
++MyPropertyMap::~MyPropertyMap()
++{
++}
++
+diff --git a/tests/auto/quicktest/signalspy/mypropertymap.h b/tests/auto/quicktest/signalspy/mypropertymap.h
+new file mode 100644
+index 0000000..d69548f
+--- /dev/null
++++ b/tests/auto/quicktest/signalspy/mypropertymap.h
+@@ -0,0 +1,41 @@
++/****************************************************************************
++**
++** Copyright (C) 2016 The Qt Company Ltd.
++** Contact: https://www.qt.io/licensing/
++**
++** This file is part of the test suite of the Qt Toolkit.
++**
++** $QT_BEGIN_LICENSE:GPL-EXCEPT$
++** Commercial License Usage
++** Licensees holding valid commercial Qt licenses may use this file in
++** accordance with the commercial license agreement provided with the
++** Software or, alternatively, in accordance with the terms contained in
++** a written agreement between you and The Qt Company. For licensing terms
++** and conditions see https://www.qt.io/terms-conditions. For further
++** information use the contact form at https://www.qt.io/contact-us.
++**
++** GNU General Public License Usage
++** Alternatively, this file may be used under the terms of the GNU
++** General Public License version 3 as published by the Free Software
++** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
++** included in the packaging of this file. Please review the following
++** information to ensure the GNU General Public License requirements will
++** be met: https://www.gnu.org/licenses/gpl-3.0.html.
++**
++** $QT_END_LICENSE$
++**
++****************************************************************************/
++
++#include <QQmlPropertyMap>
++
++class MyPropertyMap : public QQmlPropertyMap
++{
++    Q_OBJECT
++
++public:
++    MyPropertyMap(QObject *parent = nullptr);
++    ~MyPropertyMap();
++
++Q_SIGNALS:
++    void mySignal();
++};
+diff --git a/tests/auto/quicktest/signalspy/signalspy.pro b/tests/auto/quicktest/signalspy/signalspy.pro
+new file mode 100644
+index 0000000..c8f9be1
+--- /dev/null
++++ b/tests/auto/quicktest/signalspy/signalspy.pro
+@@ -0,0 +1,9 @@
++CONFIG += testcase
++TARGET = tst_signalspy
++macos:CONFIG -= app_bundle
++
++SOURCES += tst_signalspy.cpp mypropertymap.cpp
++HEADERS += mypropertymap.h
++QT += quick testlib
++
++include (../../shared/util.pri)
+diff --git a/tests/auto/quicktest/signalspy/tst_signalspy.cpp b/tests/auto/quicktest/signalspy/tst_signalspy.cpp
+new file mode 100644
+index 0000000..f54da78
+--- /dev/null
++++ b/tests/auto/quicktest/signalspy/tst_signalspy.cpp
+@@ -0,0 +1,95 @@
++/****************************************************************************
++**
++** Copyright (C) 2016 The Qt Company Ltd.
++** Contact: https://www.qt.io/licensing/
++**
++** This file is part of the test suite of the Qt Toolkit.
++**
++** $QT_BEGIN_LICENSE:GPL-EXCEPT$
++** Commercial License Usage
++** Licensees holding valid commercial Qt licenses may use this file in
++** accordance with the commercial license agreement provided with the
++** Software or, alternatively, in accordance with the terms contained in
++** a written agreement between you and The Qt Company. For licensing terms
++** and conditions see https://www.qt.io/terms-conditions. For further
++** information use the contact form at https://www.qt.io/contact-us.
++**
++** GNU General Public License Usage
++** Alternatively, this file may be used under the terms of the GNU
++** General Public License version 3 as published by the Free Software
++** Foundation with exceptions as appearing in the file LICENSE.GPL3-EXCEPT
++** included in the packaging of this file. Please review the following
++** information to ensure the GNU General Public License requirements will
++** be met: https://www.gnu.org/licenses/gpl-3.0.html.
++**
++** $QT_END_LICENSE$
++**
++****************************************************************************/
++
++#include <qtest.h>
++
++#include <qqmlengine.h>
++#include <qquickitem.h>
++#include <qquickview.h>
++
++#include "../../shared/util.h"
++#include "mypropertymap.h"
++
++class tst_SignalSpy : public QQmlDataTest
++{
++    Q_OBJECT
++public:
++    tst_SignalSpy();
++
++private slots:
++    void testValid();
++    void testCount();
++
++private:
++    QQmlEngine engine;
++};
++
++tst_SignalSpy::tst_SignalSpy()
++{
++    qmlRegisterType<MyPropertyMap>("MyImport", 1, 0, "MyPropertyMap");
++}
++
++void tst_SignalSpy::testValid()
++{
++    QQuickView window;
++    window.setSource(testFileUrl("signalspy.qml"));
++    QVERIFY(window.rootObject() != 0);
++
++    QObject *mouseSpy = window.rootObject()->findChild<QObject*>("mouseSpy");
++    QVERIFY(mouseSpy->property("valid").toBool());
++
++    QObject *propertyMapSpy = window.rootObject()->findChild<QObject*>("propertyMapSpy");
++    QVERIFY(propertyMapSpy->property("valid").toBool());
++}
++
++void tst_SignalSpy::testCount()
++{
++    QQuickView window;
++    window.resize(200, 200);
++    window.setSource(testFileUrl("signalspy.qml"));
++    window.show();
++    QTest::qWaitForWindowActive(&window);
++    QVERIFY(window.rootObject() != 0);
++
++    QObject *mouseSpy = window.rootObject()->findChild<QObject*>("mouseSpy");
++    QCOMPARE(mouseSpy->property("count").toInt(), 0);
++
++    QObject *propertyMapSpy = window.rootObject()->findChild<QObject*>("propertyMapSpy");
++    QCOMPARE(propertyMapSpy->property("count").toInt(), 0);
++
++    QTest::mouseClick(&window, Qt::LeftButton, Qt::KeyboardModifiers(), QPoint(100, 100));
++    QTRY_COMPARE(mouseSpy->property("count").toInt(), 1);
++
++    MyPropertyMap *propertyMap = static_cast<MyPropertyMap *>(window.rootObject()->findChild<QObject*>("propertyMap"));
++    Q_EMIT propertyMap->mySignal();
++    QCOMPARE(propertyMapSpy->property("count").toInt(), 1);
++}
++
++QTEST_MAIN(tst_SignalSpy)
++
++#include "tst_signalspy.moc"
+-- 
+2.10.2
+

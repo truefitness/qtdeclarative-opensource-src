@@ -1,3 +1,9 @@
+qtdeclarative-opensource-src (5.7.1-1ubuntu1~7true1~1) UNRELEASED; urgency=medium
+
+  * Bootstrap using true-qt5-bin-install-dev
+
+ -- Robert Hedges <rhedges@truefitness.com>  Sat, 10 Jun 2017 10:03:15 -0500
+
 qtdeclarative-opensource-src (5.7.1-1ubuntu1~7) zesty; urgency=medium
 
   [ Dmitry Shachnev ]

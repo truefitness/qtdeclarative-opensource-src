@@ -39,15 +39,17 @@ override_dh_auto_install-arch:
 	rm -fv debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/cmake/Qt5Qml/*Plugin.cmake
 
 	# Fix wrong permissions in examples.
-	find $(CURDIR)/debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/qt5/ -type f \( \
-	-name '*.png' \
-	-o -name '*.php' \
-	-o -name '*.xsl' \
-	-o -name '*.xml' \
-	-o -name '*.js' \
-	-o -name '*.jpg' \
-	-o -name '*.qml' \
-	\) -print0 | xargs -0 chmod a-x
+	if [ -d $(CURDIR)/debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/qt5/ ]; then
+		find $(CURDIR)/debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/qt5/ -type f \( \
+		-name '*.png' \
+		-o -name '*.php' \
+		-o -name '*.xsl' \
+		-o -name '*.xml' \
+		-o -name '*.js' \
+		-o -name '*.jpg' \
+		-o -name '*.qml' \
+		\) -print0 | xargs -0 chmod a-x
+	fi
 
 override_dh_auto_install-indep:
 	dh_auto_build -- INSTALL_ROOT=$(CURDIR)/debian/tmp install_docs

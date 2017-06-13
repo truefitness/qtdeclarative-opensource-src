@@ -48,8 +48,8 @@ override_dh_auto_install-arch:
 		-o -name '*.js' \
 		-o -name '*.jpg' \
 		-o -name '*.qml' \
-		\) -print0 | xargs -0 chmod a-x \
-	fi; \
+		\) -print0 | xargs -0 chmod a-x ; \
+	fi
 
 
 override_dh_auto_install-indep:

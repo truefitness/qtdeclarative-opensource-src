@@ -56,7 +56,7 @@ override_dh_auto_install-indep:
 	dh_auto_build -- INSTALL_ROOT=$(CURDIR)/debian/tmp install_docs
 
 override_dh_install:
-	dh_install --fail-missing
+	dh_install --list-missing
 
 override_dh_link:
 	dh_link

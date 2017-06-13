@@ -49,7 +49,8 @@ override_dh_auto_install-arch:
 		-o -name '*.jpg' \
 		-o -name '*.qml' \
 		\) -print0 | xargs -0 chmod a-x \
-	fi;
+	fi; \
+
 
 override_dh_auto_install-indep:
 	dh_auto_build -- INSTALL_ROOT=$(CURDIR)/debian/tmp install_docs

@@ -3,6 +3,7 @@ qtdeclarative-opensource-src (5.7.1-1ubuntu1~7true1~3) UNRELEASED; urgency=mediu
   * Bootstrap using true-qt5-bin-install-dev
   * Modify failing cleanup rule 
   * Add missing "\"
+  * Explicitly set multiarch to x86_64-linux-gnu 
 
  -- Robert Hedges <rhedges@truefitness.com>  Sat, 10 Jun 2017 10:03:15 -0500
 

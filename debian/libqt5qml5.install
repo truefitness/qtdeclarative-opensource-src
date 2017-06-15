@@ -1,4 +1,4 @@
-usr/lib/*/libQt5Qml.so.*
-usr/lib/*/qt5/qml/QtQml/plugins.qmltypes
-usr/lib/*/qt5/qml/QtQml/qmldir
-usr/lib/*/qt5/qml/builtins.qmltypes
+usr/lib/x86_64-linux-gnu/libQt5Qml.so.*
+usr/lib/x86_64-linux-gnu/qt5/qml/QtQml/plugins.qmltypes
+usr/lib/x86_64-linux-gnu/qt5/qml/QtQml/qmldir
+usr/lib/x86_64-linux-gnu/qt5/qml/builtins.qmltypes

@@ -1,7 +1,7 @@
-usr/lib/*/qt5/bin/qmleasing
-usr/lib/*/qt5/bin/qmlimportscanner
-usr/lib/*/qt5/bin/qmllint
-usr/lib/*/qt5/bin/qmlmin
-usr/lib/*/qt5/bin/qmlplugindump
-usr/lib/*/qt5/bin/qmlprofiler
-usr/lib/*/qt5/bin/qmltestrunner
+usr/lib/x86_64-linux-gnu/qt5/bin/qmleasing
+usr/lib/x86_64-linux-gnu/qt5/bin/qmlimportscanner
+usr/lib/x86_64-linux-gnu/qt5/bin/qmllint
+usr/lib/x86_64-linux-gnu/qt5/bin/qmlmin
+usr/lib/x86_64-linux-gnu/qt5/bin/qmlplugindump
+usr/lib/x86_64-linux-gnu/qt5/bin/qmlprofiler
+usr/lib/x86_64-linux-gnu/qt5/bin/qmltestrunner
